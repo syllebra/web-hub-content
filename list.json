@@ -3,7 +3,7 @@
     "name": "Ultimate Guitar",
     "previewUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Ultimate_Guitar_Logo.svg",
     "description": "Addon for best fullscreen view of UG chords tabs.",
-    "startUrl": "https://fr.ultimate-guitar.com/",
+    "startUrl": "https://fr.ultimate-guitar.com/explore",
     "jsScriptUrl": "https://github.com/syllebra/UGTV/raw/refs/heads/main/src/content.js"
     }
 ]
