@@ -7,4 +7,12 @@
     "jsScriptUrl": "https://github.com/syllebra/UGTV/raw/refs/heads/main/src/content.js",
     "initScale": 100
     }
+    {
+    "name": "Show me Scales",
+    "previewUrl": "",
+    "description": "Tool to explore and search for scales on multiple instruments.",
+    "startUrl": "https://syllebra.github.io/scales-web",
+    "jsScriptUrl": "",
+    "initScale": 100
+    }    
 ]
