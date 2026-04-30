@@ -6,7 +6,7 @@
     "startUrl": "https://fr.ultimate-guitar.com/explore",
     "jsScriptUrl": "https://github.com/syllebra/UGTV/raw/refs/heads/main/src/content.js",
     "initScale": 100
-    }
+    },
     {
     "name": "Show me Scales",
     "previewUrl": "",
