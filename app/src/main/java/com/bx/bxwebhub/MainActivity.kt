@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     // Le faux profil PC Windows
     private val DESKTOP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
-    private val PRODUCTION_JSON_URL = "https://raw.githubusercontent.com/syllebra/web-hub-content/refs/heads/main/list.json"
+    private val PRODUCTION_JSON_URL = "https://raw.githubusercontent.com/syllebra/web-hub/refs/heads/main/list.json"
 
     // --- 1. JSON MIS À JOUR ---
     // Ajout de "initScale": 100 sur le deuxième jeu pour tester
