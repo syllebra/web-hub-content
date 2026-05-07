@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BilboX Web Hub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-color: #0f172a;
+
+            /* Palette des jeux */
+            --color-regicide: #ef4444;    /* Rouge */
+            --color-scoundrel: #10b981;   /* Vert */
+            --color-wordplay: #a855f7;    /* Violet */
+            --color-chess: #e2e8f0;       /* Blanc/Argent */
+            --color-locked: #475569;
+
+            --text-main: #ffffff;
+            --tilt-angle: -4deg;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- UI CONTROLS --- */
+        .ui-controls {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(4px);
+            outline: none; /* Nettoyage du focus TV pour le bouton */
+        }
+
+        .icon-btn:hover, .icon-btn:focus {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+            border-color: white;
+        }
+
+        .icon-btn.active {
+            border-color: #10b981;
+            color: #10b981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        /* --- ACCORDEON GLOBAL --- */
+        .accordion {
+            display: flex;
+            width: 110%;
+            height: 100%;
+            margin-left: -5%;
+            background: #020617;
+        }
+
+        /* --- PANNEAU INDIVIDUEL --- */
+        .panel {
+            position: relative;
+            flex: 1;
+            height: 100%;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            border-left: 1px solid rgba(255,255,255,0.03);
+
+            transition:
+                flex 0.5s cubic-bezier(0.2, 0, 0, 1),
+                filter 0.3s ease,
+                background-color 0.3s ease;
+
+            overflow: hidden;
+            transform: skewX(var(--tilt-angle));
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            cursor: pointer;
+            outline: none; /* Indispensable pour masquer le contour bleu moche d'Android TV */
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.9));
+            z-index: 1;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .panel-bg {
+            position: absolute;
+            top: -10%; left: -50%; right: -50%; bottom: -10%;
+            transform: skewX(calc(var(--tilt-angle) * -1));
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            opacity: 0.2;
+            transition: transform 6s ease-out, opacity 0.4s ease;
+            z-index: 0;
+            filter: grayscale(0.8) sepia(0.2);
+            pointer-events: none;
+        }
+
+        /* --- HOVER & FOCUS STATES (TV NAVIGATION) --- */
+        /* On combine :hover (souris) et :focus (télécommande) */
+        .panel:hover, .panel:focus {
+            flex: 3.5;
+            filter: brightness(1.15) contrast(1.05);
+            z-index: 10;
+            box-shadow: 0 0 80px rgba(0,0,0,0.9);
+            border-color: var(--theme, rgba(255,255,255,0.3));
+        }
+
+        .panel:hover .panel-bg, .panel:focus .panel-bg {
+            opacity: 0.5;
+            transform: skewX(calc(var(--tilt-angle) * -1)) scale(1.1);
+            filter: grayscale(0.2);
+        }
+
+        /* --- CONTENT --- */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            transform: skewX(calc(var(--tilt-angle) * -1));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            padding: 0 1rem;
+            opacity: 0.6;
+            transition: all 0.4s ease;
+        }
+
+        .panel:hover .content-wrapper, .panel:focus .content-wrapper {
+            opacity: 1;
+            transform: skewX(calc(var(--tilt-angle) * -1)) scale(1.05);
+        }
+
+        /* Icons */
+        .icon-box {
+            margin-bottom: 1.5rem;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .panel:hover .icon-box, .panel:focus .icon-box {
+            transform: scale(1.4) translateY(-10px) rotate(-5deg);
+        }
+
+        /* Typography */
+        h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.2rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            white-space: nowrap;
+        }
+
+        .tagline {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 1rem;
+            font-weight: 700;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover .tagline, .panel:focus .tagline { opacity: 1; transform: translateY(0); }
+
+        .description {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: rgba(255,255,255,0.9);
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            transform: translateY(20px);
+            max-width: 280px;
+        }
+
+        .panel:hover .description, .panel:focus .description {
+            max-height: 200px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 0.5rem;
+        }
+
+        /* Bouton Jouer */
+        .btn-play {
+            margin-top: 0;
+            padding: 0.8rem 2.5rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.3s ease 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel:hover .btn-play, .panel:focus .btn-play {
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 2rem;
+        }
+
+        .btn-play::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-play:hover::after { left: 100%; }
+
+        .panel:hover .btn-play:hover, .panel:focus .btn-play {
+            /* Sur la TV, quand le panel a le focus, le bouton s'allume automatiquement */
+            background: var(--theme);
+            color: #000;
+            box-shadow: 0 0 25px var(--theme);
+            border-color: var(--theme);
+        }
+
+        /* --- COULEURS SPÉCIFIQUES --- */
+        .panel[data-theme="regicide"] { --theme: var(--color-regicide); }
+        .panel[data-theme="scoundrel"] { --theme: var(--color-scoundrel); }
+        .panel[data-theme="wordplay"] { --theme: var(--color-wordplay); }
+        .panel[data-theme="chess"] { --theme: var(--color-chess); }
+        .panel[data-theme="locked"] { --theme: var(--color-locked); }
+
+        .panel .panel-bg { background-color: #020617; } /* Base color before image loads */
+        .panel:hover, .panel:focus { border-color: var(--theme); }
+        .panel h2 { color: var(--theme); }
+        .panel .icon-box { color: var(--theme); }
+        .panel .btn-play { color: white; border-color: rgba(255,255,255,0.5); }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 850px) {
+            .accordion { flex-direction: column; width: 100%; margin-left: 0; }
+            .panel { width: 100%; transform: none; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .panel-bg, .content-wrapper, .panel:hover .panel-bg, .panel:focus .panel-bg, .panel:hover .content-wrapper, .panel:focus .content-wrapper { transform: none !important; }
+            .panel:hover, .panel:focus { flex: 2; }
+            h2 { font-size: 1.5rem; }
+            .ui-controls { top: 15px; right: 15px; }
+            .icon-box i { width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ui-controls">
+    <button id="soundToggle" class="icon-btn" title="Activer/Désactiver le son" tabindex="0">
+        <i data-lucide="volume-x" width="20" height="20"></i>
+    </button>
+</div>
+
+<div class="accordion" id="app-container">
+</div>
+
+<script>
+    // --- SYSTÈME AUDIO PROCEDURAL ---
+    const soundToggleBtn = document.getElementById('soundToggle');
+    const icon = soundToggleBtn.querySelector('i');
+    let audioCtx = null;
+    let isMuted = true; // Modifie ici par "false" si tu veux le son activé par défaut
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playHoverSound() {
+        if (isMuted || !audioCtx) return;
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(800, t);
+        osc.frequency.exponentialRampToValueAtTime(1400, t + 0.05);
+
+        gain.gain.setValueAtTime(0.04, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1200;
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.1);
+    }
+
+    function playClickSound() {
+        if (isMuted || !audioCtx) return;
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.frequency.setValueAtTime(150, t);
+        osc.frequency.exponentialRampToValueAtTime(0.01, t + 0.5);
+
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.5);
+    }
+
+    function playBootSound() {
+        if (!audioCtx) return;
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, t);
+        osc.frequency.linearRampToValueAtTime(880, t + 0.3);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.1, t + 0.1);
+        gain.gain.linearRampToValueAtTime(0, t + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.4);
+    }
+
+    const toggleSound = () => {
+        initAudio();
+        isMuted = !isMuted;
+        if (!isMuted) {
+            soundToggleBtn.classList.add('active');
+            icon.setAttribute('data-lucide', 'volume-2');
+            playBootSound();
+        } else {
+            soundToggleBtn.classList.remove('active');
+            icon.setAttribute('data-lucide', 'volume-x');
+        }
+        lucide.createIcons();
+    };
+
+    soundToggleBtn.addEventListener('click', toggleSound);
+    // Permettre d'activer le son avec la touche Entrée de la télécommande
+    soundToggleBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') toggleSound();
+    });
+
+
+    // --- INJECTION DYNAMIQUE DEPUIS KOTLIN ---
+    function injecterApplications(jsonString) {
+        const apps = JSON.parse(jsonString);
+        const container = document.getElementById('app-container');
+        container.innerHTML = '';
+
+        // Palettes et icônes par défaut si non fournies dans le JSON
+        const themes = ['regicide', 'scoundrel', 'wordplay', 'chess'];
+        const icons = ['gamepad-2', 'swords', 'puzzle', 'rocket', 'crown'];
+
+        apps.forEach((app, index) => {
+            // Attribution d'un thème et d'une icône par rotation
+            const theme = themes[index % themes.length];
+            const icon = icons[index % icons.length];
+
+            const panel = document.createElement('div');
+            panel.className = 'panel';
+            panel.dataset.theme = theme;
+            // Le tabIndex="0" est le secret pour la navigation D-Pad (Android TV)
+            panel.tabIndex = 0;
+
+            // On utilise previewUrl comme image de fond
+            const bgImage = app.previewUrl ? `background-image: url('${app.previewUrl}');` : '';
+
+            panel.innerHTML = `
+                <div class="panel-bg" style="${bgImage}"></div>
+                <div class="content-wrapper">
+                    <div class="icon-box"><i data-lucide="${icon}" width="48" height="48" stroke-width="1.5"></i></div>
+                    <div class="tagline">Application</div>
+                    <h2>${app.name}</h2>
+                    <div class="description">
+                        <p>Appuyez sur Entrée pour lancer</p>
+                    </div>
+                    <div class="btn-play">Jouer</div>
+                </div>
+            `;
+
+            const openThisApp = () => {
+                playClickSound();
+                // On laisse le temps au son de démarrer avant de couper la page
+                setTimeout(() => {
+                    if (typeof AndroidBridge !== 'undefined') {
+                        AndroidBridge.openApp(app.startUrl, app.jsScriptUrl);
+                    } else {
+                        console.log("Mock ouverture app :", app.startUrl);
+                    }
+                }, 100);
+            };
+
+            // Événements Tactile / Souris
+            panel.onclick = openThisApp;
+            panel.addEventListener('mouseenter', () => playHoverSound());
+
+            // Événements Télécommande Android TV
+            panel.addEventListener('focus', () => playHoverSound());
+            panel.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    openThisApp();
+                }
+            };
+
+            container.appendChild(panel);
+        });
+
+        // On ajoute le slot vide / à venir à la fin (non cliquable)
+        const lockedPanel = document.createElement('div');
+        lockedPanel.className = 'panel';
+        lockedPanel.dataset.theme = 'locked';
+        lockedPanel.innerHTML = `
+            <div class="panel-bg"></div>
+            <div class="content-wrapper">
+                <div class="icon-box"><i data-lucide="plus" width="32" height="32" stroke-width="1.5"></i></div>
+                <h2>...</h2>
+            </div>
+        `;
+        container.appendChild(lockedPanel);
+
+        // Rendu des icônes Lucide fraîchement injectées
+        lucide.createIcons();
+
+        // Focus automatique sur le premier jeu au chargement pour la TV
+        if (apps.length > 0) {
+            setTimeout(() => container.firstElementChild.focus(), 150);
+        }
+    }
+
+    // Si on teste sur navigateur PC en dehors d'Android, on peut mocker des données
+    if (typeof AndroidBridge === 'undefined') {
+        const mockJson = `[
+            { "name": "Wikipedia", "previewUrl": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?q=80&w=1000&auto=format&fit=crop", "startUrl": "#", "jsScriptUrl": "" },
+            { "name": "Météo", "previewUrl": "https://images.unsplash.com/photo-1561484930-998b6a7b22e8?q=80&w=1000&auto=format&fit=crop", "startUrl": "#", "jsScriptUrl": "" }
+        ]`;
+        // Décommenter pour tester sur PC
+        // window.onload = () => injecterApplications(mockJson);
+    }
+
+// --- GESTION DE LA MANETTE / TÉLÉCOMMANDE TV ---
+        document.addEventListener('keydown', (e) => {
+            // On cible uniquement les flèches directionnelles
+            if (['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+
+                // 1. On bloque le comportement par défaut (le scroll de la page)
+                e.preventDefault();
+
+                const currentFocus = document.activeElement;
+                const panels = Array.from(document.querySelectorAll('.panel'));
+                const currentIndex = panels.indexOf(currentFocus);
+                const soundBtn = document.getElementById('soundToggle');
+
+                // Si rien n'est sélectionné, on force le focus sur le premier jeu
+                if (currentIndex === -1 && currentFocus !== soundBtn) {
+                    if (panels.length > 0) panels[0].focus();
+                    return;
+                }
+
+                // 2. Logique de navigation
+                if (e.key === 'ArrowRight') {
+                    // Aller à droite
+                    if (currentIndex >= 0 && currentIndex < panels.length - 1) {
+                        panels[currentIndex + 1].focus();
+                    }
+                }
+                else if (e.key === 'ArrowLeft') {
+                    // Aller à gauche
+                    if (currentIndex > 0) {
+                        panels[currentIndex - 1].focus();
+                    }
+                }
+                else if (e.key === 'ArrowUp') {
+                    // Si on fait Haut depuis un jeu, on va sur le bouton son
+                    if (currentIndex >= 0) {
+                        soundBtn.focus();
+                    }
+                }
+                else if (e.key === 'ArrowDown') {
+                    // Si on fait Bas depuis le bouton son, on retourne sur le premier jeu
+                    if (currentFocus === soundBtn && panels.length > 0) {
+                        panels[0].focus();
+                    }
+                }
+            }
+        }, { passive: false }); // 'passive: false' est crucial pour que preventDefault() fonctionne
+</script>
+</body>
+</html>
